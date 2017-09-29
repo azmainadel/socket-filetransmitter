@@ -8,10 +8,8 @@ import java.net.Socket;
 public class Server {
     private ServerSocket serverSocket = null;
     private Socket socket = null;
-    private ObjectInputStream inputStream = null;
-    private DataInputStream dataInputStream = null;
-    private FileOutputStream fileOutputStream = null;
-    private FileHandler fileHandler;
+    private BufferedReader bufferedReader;
+    private PrintWriter printWriter;
     private File file = null;
 
     public Server() {
@@ -23,49 +21,51 @@ public class Server {
         try {
             serverSocket = new ServerSocket(4445);
             socket = serverSocket.accept();
-            inputStream = new ObjectInputStream(socket.getInputStream());
-            dataInputStream = new DataInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    public void receiveFile() {
+    public void receiveFile() throws IOException {
 
-        try {
-            fileHandler = (FileHandler) inputStream.readObject();
+        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        printWriter = new PrintWriter(socket.getOutputStream());
 
-            if (fileHandler.getFileStatus().equals("Error")) {
-                System.out.println("Error in reading the File...");
-                System.exit(0);
-            }
-            
-            String fileName = fileHandler.getFileDestination() + fileHandler.getFileName();
-            
-            if (!new File(fileHandler.getFileDestination()).exists()) {
-                new File(fileHandler.getFileDestination()).mkdirs();
-            }
-            file = new File(fileName);
-            fileOutputStream = new FileOutputStream(file);
+        String fileName = bufferedReader.readLine();
+        long fileSize = Long.parseLong(bufferedReader.readLine());
 
-            byte[] fileBytes = new byte[(int) file.length()];
-            dataInputStream.read(fileBytes);
+        printWriter.flush();
+
+        file = new File("/home/xyntherys/Downloads/Server/" + fileName);
+
+        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+        byte[] fileBytes = new byte[4096];
+
+        int read = 0;
+        int totalRead = 0;
+        int remaining = (int) fileSize;
+        System.out.println(remaining);
+
+        while(remaining > 4096) {
+            read = dataInputStream.read(fileBytes);
+            totalRead += read;
+            remaining -= read;
+            System.out.println("read " + totalRead + " bytes.");
+
             fileOutputStream.write(fileBytes);
-//            fileOutputStream.write(fileHandler.getFileData());
-//            fileOutputStream.flush();
-//            fileOutputStream.close();
 
-            System.out.println("Output file: " + fileName + " has been successfully received.");
-//            Thread.sleep(3000);
-//            System.exit(0);
-
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
         }
+        dataInputStream.read(fileBytes, 0, remaining);
+        fileOutputStream.write(fileBytes, 0, remaining);
+
+        fileOutputStream.close();
+        dataInputStream.close();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Server server = new Server();
         server.connect();
         server.receiveFile();
