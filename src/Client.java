@@ -74,8 +74,6 @@ public class Client {
 
 
         System.out.println("File sent to Server successfully.");
-
-
     }
 
     public static void main(String[] args) throws IOException {

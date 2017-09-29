@@ -5,6 +5,7 @@ import java.net.Socket;
 /**
  * Created by xyntherys on 9/29/17.
  */
+
 public class Server {
     private ServerSocket serverSocket = null;
     private Socket socket = null;
@@ -47,17 +48,26 @@ public class Server {
         int read = 0;
         int totalRead = 0;
         int remaining = (int) fileSize;
+
         System.out.println(remaining);
 
-        while(remaining > 4096) {
-            read = dataInputStream.read(fileBytes);
+//        while(remaining > 4096) {
+//            read = dataInputStream.read(fileBytes);
+//            totalRead += read;
+//            remaining -= read;
+//            System.out.println("read " + totalRead + " bytes.");
+//
+//            fileOutputStream.write(fileBytes);
+//        }
+
+        while((read = dataInputStream.read(fileBytes)) >= 0) {
             totalRead += read;
             remaining -= read;
             System.out.println("read " + totalRead + " bytes.");
 
             fileOutputStream.write(fileBytes);
-
         }
+
         dataInputStream.read(fileBytes, 0, remaining);
         fileOutputStream.write(fileBytes, 0, remaining);
 
