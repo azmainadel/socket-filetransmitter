@@ -11,16 +11,14 @@ public class Client {
     private Socket socket = null;
     private String sourceAddress = null;
 
+    private FileHandler fileHandler = new FileHandler();
+
+    private int senderStudentID = 0;
+    private int receiverStudentID = 0;
+
     private PrintWriter printWriter = null;
     private BufferedReader bufferedReader = null;
 
-    public void setSourceAddress(String sourceAddress) {
-        this.sourceAddress = sourceAddress;
-    }
-
-    public String getSourceAddress() {
-        return sourceAddress;
-    }
 
     public Client() {
 
@@ -29,6 +27,8 @@ public class Client {
     public void connect() {
         try {
             socket = new Socket("localHost", 4445);
+            System.out.println("----FILE TRANSMISSION SYSTEM RUNNING----");
+
         } catch (IOException e) {
             System.err.println("Can not connect to the server. Please try again.");
             e.printStackTrace();
@@ -38,12 +38,18 @@ public class Client {
 
     public void sendFile() throws IOException {
 
-        String fileName = sourceAddress.substring(sourceAddress.lastIndexOf("/") + 1, sourceAddress.length());
+//        String fileName = sourceAddress.substring(sourceAddress.lastIndexOf("/") + 1, sourceAddress.length());
+//
+//        File file = new File(sourceAddress);
 
-        File file = new File(sourceAddress);
+        String fileName = fileHandler.getFileName();
+        File file = new File(fileHandler.getFileLocation());
 
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
+
+//        printWriter.println(senderStudentID);
+//        printWriter.println(receiverStudentID);
 
         printWriter.println(fileName);
         printWriter.println(file.length());
@@ -73,7 +79,7 @@ public class Client {
         fileInputStream.close();
         dataOutputStream.close();
 
-        System.out.println("File: " + sourceAddress + " sent to Server successfully.");
+        System.out.println("File: " + fileHandler.getFileLocation() + " sent to Server successfully.");
     }
 
     public static void main(String[] args) throws IOException {
@@ -81,11 +87,16 @@ public class Client {
         client.connect();
 
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter file address: ");
-        client.setSourceAddress(scanner.next());
 
-        System.out.println("Enter receiver StudentID: ");
+//        System.out.println("Enter your StudentID: ");
+//        client.senderStudentID = scanner.nextInt();
+//
+//        System.out.println("Enter receiver StudentID: ");
+//        client.receiverStudentID = scanner.nextInt();
 
+        System.out.println("Enter the address of the file to be sent: ");
+//        client.sourceAddress = scanner.next();
+        client.fileHandler.setFileLocation(scanner.next());
         client.sendFile();
     }
 }
