@@ -9,9 +9,9 @@ import java.net.Socket;
 public class Server {
     private ServerSocket serverSocket = null;
     private Socket socket = null;
-    private BufferedReader bufferedReader;
-    private PrintWriter printWriter;
-    private File file = null;
+    private BufferedReader bufferedReader = null;
+    private PrintWriter printWriter = null;
+    private static String serverAddress = "/home/xyntherys/Downloads/Server/";
 
     public Server() {
 
@@ -21,6 +21,8 @@ public class Server {
 
         try {
             serverSocket = new ServerSocket(4445);
+            System.out.println("Server started successfully.");
+
             socket = serverSocket.accept();
         } catch (IOException e) {
             e.printStackTrace();
@@ -38,10 +40,12 @@ public class Server {
 
         printWriter.flush();
 
-        file = new File("/home/xyntherys/Downloads/Server/" + fileName);
+        File file = new File(serverAddress + fileName);
 
         DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+        fileOutputStream.flush();
 
         byte[] fileBytes = new byte[4096];
 
@@ -51,16 +55,8 @@ public class Server {
 
         System.out.println(remaining);
 
-//        while(remaining > 4096) {
-//            read = dataInputStream.read(fileBytes);
-//            totalRead += read;
-//            remaining -= read;
-//            System.out.println("read " + totalRead + " bytes.");
-//
-//            fileOutputStream.write(fileBytes);
-//        }
-
-        while((read = dataInputStream.read(fileBytes)) >= 0) {
+        while(remaining > 4096) {
+            read = dataInputStream.read(fileBytes);
             totalRead += read;
             remaining -= read;
             System.out.println("read " + totalRead + " bytes.");
@@ -71,8 +67,13 @@ public class Server {
         dataInputStream.read(fileBytes, 0, remaining);
         fileOutputStream.write(fileBytes, 0, remaining);
 
+        System.out.println("read " + (totalRead + remaining) + " bytes.");
+
         fileOutputStream.close();
         dataInputStream.close();
+
+        System.out.println("File: " + serverAddress + fileName + " received by Server successfully.");
+
     }
 
     public static void main(String[] args) throws IOException {
