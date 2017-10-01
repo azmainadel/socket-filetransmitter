@@ -17,7 +17,8 @@ public class Server {
 
     private static String serverAddress = "/home/xyntherys/Downloads/Server/";
 
-    private int studentID;
+    private int senderStudentID;
+    private int receiverStudentID;
     private String ipAddress;
     private int port;
 
@@ -43,8 +44,9 @@ public class Server {
                 socket = serverSocket.accept();
 
                 bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                printWriter = new PrintWriter(socket.getOutputStream());
 
-                studentID = Integer.parseInt(bufferedReader.readLine());
+                senderStudentID = Integer.parseInt(bufferedReader.readLine());
 
                 ipAddress = socket.getInetAddress().toString();
                 port = socket.getPort();
@@ -52,21 +54,23 @@ public class Server {
                 NetworkAddress networkAddress = new NetworkAddress(ipAddress, port);
 
                 System.out.println("----NEW CONNECTION----");
-                System.out.println(">Student ID: " + studentID + " | Address: " + ipAddress + "-" + port);
+                System.out.println("> Student ID: " + senderStudentID + " | Address: " + ipAddress + "-" + port);
 
-                if(clientMap.containsKey(studentID)){
+                if(clientMap.containsKey(senderStudentID)){
                     System.out.println("Student already logged in.");
-                    printWriter = new PrintWriter(socket.getOutputStream());
 
                     printWriter.println("LOGGED_IN");
                     printWriter.flush();
                 }
                 else {
-                    clientMap.put(studentID, networkAddress);
+                    printWriter.println("NOT_LOGGED_IN");
+                    printWriter.flush();
 
-                    TransmissionHandler transmissionHandler = new TransmissionHandler(socket, studentID, clientMap, bufferedReader);
+                    clientMap.put(senderStudentID, networkAddress);
 
-                    Thread thread = new Thread(transmissionHandler);
+                    FileReceiver fileReceiver = new FileReceiver(socket, senderStudentID, clientMap, bufferedReader);
+
+                    Thread thread = new Thread(fileReceiver);
                     thread.start();
                 }
             }

@@ -1,7 +1,10 @@
+import java.io.File;
+
 /**
  * Created by xyntherys on 9/30/17.
  */
 public class FileHandler {
+    private File file;
     private String fileName;
     private long fileSize;
     private String fileID;
@@ -9,6 +12,7 @@ public class FileHandler {
 
     public String getFileName() {
         return fileLocation.substring(fileLocation.lastIndexOf("/") + 1, fileLocation.length());
+//        return this.file.getName();
     }
 
     public void setFileName(String fileName) {
@@ -16,7 +20,7 @@ public class FileHandler {
     }
 
     public long getFileSize() {
-        return fileSize;
+        return this.file.length();
     }
 
     public void setFileSize(long fileSize) {
@@ -27,8 +31,8 @@ public class FileHandler {
         return fileID;
     }
 
-    public void setFileID(String fileID) {
-        this.fileID = fileID;
+    public void setFileID(int studentID) {
+        this.fileID = "FILE-" + String.valueOf(studentID) + getFileName().toUpperCase();
     }
 
     public String getFileLocation() {
@@ -39,8 +43,16 @@ public class FileHandler {
         this.fileLocation = fileLocation;
     }
 
-    public void generateFileID(String fileName, int studentID){
-        this.fileID = "FILE-" + String.valueOf(studentID) + getFileName().toUpperCase();
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+    public FileHandler(String fileLocation) {
+        this.file = new File(fileLocation);
     }
 
     public FileHandler() {

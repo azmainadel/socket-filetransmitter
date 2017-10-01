@@ -9,7 +9,6 @@ import java.util.Scanner;
 
 public class Client {
     private Socket socket = null;
-    private FileHandler fileHandler = new FileHandler();
 
     private int senderStudentID = 0;
     private int receiverStudentID = 0;
@@ -25,56 +24,31 @@ public class Client {
     public void connect() {
         try {
             socket = new Socket("localHost", 4445);
-            System.out.println("----FILE TRANSMISSION SYSTEM RUNNING----");
+            System.out.println("--------FILE TRANSMISSION SYSTEM RUNNING--------");
 
         } catch (IOException e) {
-            System.err.println("Can not connect to the server. Please try again.");
+            System.err.println("> Server: \nCan not connect to the server. Please try again.");
             e.printStackTrace();
         }
     }
 
-    public void sendFile() throws IOException {
-
-        String fileName = fileHandler.getFileName();
-        File file = new File(fileHandler.getFileLocation());
-
+    public int checkActivity(int senderStudentID) throws IOException {
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
 
         printWriter.println(senderStudentID);
-//        System.out.println(bufferedReader.readLine());
-//        printWriter.println(receiverStudentID);
-        printWriter.println(fileName);
-        printWriter.println(file.length());
-
         printWriter.flush();
 
+        String feedback = bufferedReader.readLine();
 
-        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-        FileInputStream fileInputStream = new FileInputStream(file);
-
-        dataOutputStream.flush();
-
-
-        byte[] fileBytes = new byte[4096];
-        int fileSize = (int) file.length();
-        int read;
-
-        while (fileSize > 4096 ) {
-            read = fileInputStream.read(fileBytes);
-            fileSize -= read;
-            dataOutputStream.write(fileBytes);
-
-            System.out.println("Read " + fileSize + " bytes");
+        if(feedback.equals("LOGGED_IN")) {
+            System.out.println("> Server: \nYou are already logged in from another IP Address.");
+            return 1;
         }
-
-        fileInputStream.read(fileBytes, 0, fileSize);
-        dataOutputStream.write(fileBytes, 0, fileSize);
-
-        fileInputStream.close();
-        dataOutputStream.close();
-
-        System.out.println("File: " + fileHandler.getFileLocation() + " sent to Server successfully.");
+        else if(feedback.equals("NOT_LOGGED_IN")){
+            return 2;
+        }
+        return 0;
     }
 
     public static void main(String[] args) throws IOException {
@@ -83,15 +57,35 @@ public class Client {
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter your StudentID: ");
-        client.senderStudentID = scanner.nextInt();
+        System.out.println("> Server: \nEnter your StudentID to log in: ");
+        int studentID = scanner.nextInt();
 
-//        System.out.println("Enter receiver StudentID: ");
-//        client.receiverStudentID = scanner.nextInt();
+        client.senderStudentID = studentID;
 
-        System.out.println("Enter the address of the file to be sent: ");
-        client.fileHandler.setFileLocation(scanner.next());
-//
-        client.sendFile();
+        if(client.checkActivity(studentID) == 2) {
+            System.out.println("Press [s] to send a file or [r] to receive.");
+            char choice = (char) System.in.read();
+
+            if (choice == 's') {
+
+//                System.out.println("Enter receiver StudentID: ");
+//                client.receiverStudentID = scanner.nextInt();
+
+                System.out.println("Enter the address of the file to be sent: ");
+                FileHandler fileHandler = new FileHandler();
+                fileHandler.setFileLocation(scanner.next());
+
+//                FileSender fileSender = new FileSender(client.socket, client.receiverStudentID, fileHandler);
+
+                FileSender fileSender = new FileSender(client.socket, fileHandler);
+                fileSender.sendFile();
+
+            }
+            else if (choice == 'r'){
+
+            }
+        }
+
     }
+
 }
