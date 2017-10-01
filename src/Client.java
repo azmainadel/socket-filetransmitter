@@ -9,8 +9,6 @@ import java.util.Scanner;
 
 public class Client {
     private Socket socket = null;
-    private String sourceAddress = null;
-
     private FileHandler fileHandler = new FileHandler();
 
     private int senderStudentID = 0;
@@ -35,12 +33,7 @@ public class Client {
         }
     }
 
-
     public void sendFile() throws IOException {
-
-//        String fileName = sourceAddress.substring(sourceAddress.lastIndexOf("/") + 1, sourceAddress.length());
-//
-//        File file = new File(sourceAddress);
 
         String fileName = fileHandler.getFileName();
         File file = new File(fileHandler.getFileLocation());
@@ -48,12 +41,14 @@ public class Client {
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
 
-//        printWriter.println(senderStudentID);
+        printWriter.println(senderStudentID);
+//        System.out.println(bufferedReader.readLine());
 //        printWriter.println(receiverStudentID);
-
         printWriter.println(fileName);
         printWriter.println(file.length());
+
         printWriter.flush();
+
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         FileInputStream fileInputStream = new FileInputStream(file);
@@ -70,7 +65,7 @@ public class Client {
             fileSize -= read;
             dataOutputStream.write(fileBytes);
 
-            System.out.println(fileSize);
+            System.out.println("Read " + fileSize + " bytes");
         }
 
         fileInputStream.read(fileBytes, 0, fileSize);
@@ -88,15 +83,15 @@ public class Client {
 
         Scanner scanner = new Scanner(System.in);
 
-//        System.out.println("Enter your StudentID: ");
-//        client.senderStudentID = scanner.nextInt();
-//
+        System.out.println("Enter your StudentID: ");
+        client.senderStudentID = scanner.nextInt();
+
 //        System.out.println("Enter receiver StudentID: ");
 //        client.receiverStudentID = scanner.nextInt();
 
         System.out.println("Enter the address of the file to be sent: ");
-//        client.sourceAddress = scanner.next();
         client.fileHandler.setFileLocation(scanner.next());
+//
         client.sendFile();
     }
 }

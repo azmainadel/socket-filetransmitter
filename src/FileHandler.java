@@ -40,7 +40,7 @@ public class FileHandler {
     }
 
     public void generateFileID(String fileName, int studentID){
-        this.fileID = getFileName().substring(0, 2);
+        this.fileID = "FILE-" + String.valueOf(studentID) + getFileName().toUpperCase();
     }
 
     public FileHandler() {
